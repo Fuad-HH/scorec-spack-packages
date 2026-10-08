@@ -26,6 +26,18 @@ class PumiTally(CMakePackage, CudaPackage):
     depends_on("cxx", type="build")
     depends_on("c", type="build")
     depends_on("cmake", type="build")
+    depends_on("pkgconfig", type="build")
+
+    # PETSc only enables CUDA from its own +cuda variant (it does not follow the
+    # Kokkos backend), and petsc~cuda fails to configure against a CUDA Kokkos.
+    # Key PETSc's CUDA off the Kokkos we build against, like pumi-pic does for
+    # Cabana; the direct kokkos edge is what lets the ^kokkos condition match.
+    depends_on("kokkos")
+    depends_on("petsc@3.23:+kokkos")
+    for arch in CudaPackage.cuda_arch_values:
+        cuda_dep = f"+cuda cuda_arch={arch}"
+        depends_on(f"kokkos {cuda_dep}", when=cuda_dep)
+        depends_on(f"petsc {cuda_dep}", when=f"^kokkos {cuda_dep}")
 
     depends_on("pumi-pic@pumitally")
     conflicts(
