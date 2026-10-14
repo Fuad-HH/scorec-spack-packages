@@ -48,6 +48,14 @@ class Meshfields(CMakePackage, CudaPackage):
     depends_on('kokkos+cuda', when='+cuda')
     depends_on('cabana+cuda', when='+cuda')
 
+    # Propagate cuda_arch to dependencies, see https://github.com/spack/spack/issues/28714
+    for arch in CudaPackage.cuda_arch_values:
+        cuda_dep = '+cuda cuda_arch={0}'.format(arch)
+        depends_on('kokkos {0}'.format(cuda_dep), when=cuda_dep)
+        depends_on('cabana {0}'.format(cuda_dep), when=cuda_dep)
+
+    conflicts('cuda_arch=none', when='+cuda', msg='CUDA architecture is required')
+
     def cmake_args(self):
         # FIXME: Add arguments other than
         # FIXME: CMAKE_INSTALL_PREFIX and CMAKE_BUILD_TYPE
