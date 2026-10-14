@@ -5,10 +5,11 @@
 
 #from spack import *
 from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack.package import *
 
 
-class Pcms(CMakePackage):
+class Pcms(CMakePackage, CudaPackage):
     """FIXME: Put a proper description of your package here."""
 
     homepage      = "https://github.com/SCOREC/pcms"
@@ -59,6 +60,16 @@ class Pcms(CMakePackage):
     depends_on('netcdf-c build_system=cmake', when='+netcdf')
 
     extends('python', when='+python')
+
+    # Propagate cuda_arch to dependencies, see https://github.com/spack/spack/issues/28714
+    for arch in CudaPackage.cuda_arch_values:
+        cuda_dep = '+cuda cuda_arch={0}'.format(arch)
+        depends_on('kokkos {0}'.format(cuda_dep), when=cuda_dep)
+        depends_on('kokkos-kernels {0}'.format(cuda_dep), when=cuda_dep)
+        depends_on('meshfields {0}'.format(cuda_dep), when='{0} ^meshfields'.format(cuda_dep))
+        depends_on('petsc {0}'.format(cuda_dep), when='@develop+petsc {0}'.format(cuda_dep))
+
+    conflicts('cuda_arch=none', when='+cuda', msg='CUDA architecture is required')
 
 
     resource(name='testdata',
