@@ -104,3 +104,10 @@ class Pcms(CMakePackage):
                 self._if_ninja_target_execute('test',
                                               jobs_env='CTEST_PARALLEL_LEVEL',parallel=False)
                 self._if_ninja_target_execute('check',parallel=False)
+
+    def test_python_import(self):
+        """Check that the installed Python module can be imported"""
+        if not self.spec.satisfies("+python"):
+            raise SkipTest("Package must be built with +python")
+        python = self.spec["python"].command
+        python("-c", "import pcms")
