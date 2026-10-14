@@ -33,7 +33,8 @@ class PumiTally(CMakePackage, CudaPackage):
     # Key PETSc's CUDA off the Kokkos we build against, like pumi-pic does for
     # Cabana; the direct kokkos edge is what lets the ^kokkos condition match.
     depends_on("kokkos")
-    depends_on("petsc@3.23:+kokkos")
+    # double is needed to pass Omega_h::Reals directly to petsc
+    depends_on("petsc@3.23:+kokkos+double")
     for arch in CudaPackage.cuda_arch_values:
         cuda_dep = f"+cuda cuda_arch={arch}"
         depends_on(f"kokkos {cuda_dep}", when=cuda_dep)
