@@ -117,9 +117,10 @@ jobs:
       if: failure()
       run: |
         mkdir -p build-logs
-        stage="$(spack location --stage-dir)"
-        find "$stage" -maxdepth 3 \( -name 'spack-build-out.txt' -o -name 'spack-build-env.txt' \) \
-          -exec sh -c 'pkg=$(basename "$(dirname "$1")"); cp "$1" "build-logs/${pkg}-$(basename "$1")"' _ {} \;
+        stage="$(spack location -S)"
+        # configure.log is written by PETSc into its source dir (spack-src/).
+        find "$stage" -maxdepth 3 \( -name 'spack-build-out.txt' -o -name 'spack-build-env.txt' -o -name 'configure.log' \) \
+          -exec sh -c 'pkg=${1#"$2"/}; pkg=${pkg%%/*}; cp "$1" "build-logs/${pkg}-$(basename "$1")"' _ {} "$stage" \;
 
     - name: Upload build logs
       if: failure()

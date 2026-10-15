@@ -9,6 +9,11 @@ spack:
   repos:
     scorec: $env/../../spack_repo/scorec
 
+  packages:
+    kokkos-kernels:
+      # PETSc's configure needs kokkos-kernels instantiated for the enabled backends.
+      require: '+execspace_serial+execspace_openmp'
+
   concretizer:
     # Required so mutually exclusive variants can coexist in one environment.
     unify: false
