@@ -10,6 +10,10 @@ spack:
     scorec: $env/../../spack_repo/scorec
 
   packages:
+    petsc:
+      # Drop this once the petsc conflicts("~openmp", when="+kokkos ^kokkos+openmp").
+      # Currently when Kokkos/kokkos-kernels+openmp, petsc recipe may pick ~openmp
+      require: '+openmp'
     kokkos-kernels:
       # PETSc's configure needs kokkos-kernels instantiated for the enabled backends.
       require: '+execspace_serial+execspace_openmp'
