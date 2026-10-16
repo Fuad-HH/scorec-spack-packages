@@ -14,9 +14,6 @@ spack:
       # Drop this once the petsc conflicts("~openmp", when="+kokkos ^kokkos+openmp").
       # Currently when Kokkos/kokkos-kernels+openmp, petsc recipe may pick ~openmp
       require: '+openmp'
-    kokkos-kernels:
-      # PETSc's configure needs kokkos-kernels instantiated for the enabled backends.
-      require: '+execspace_serial+execspace_openmp'
 
   concretizer:
     # Required so mutually exclusive variants can coexist in one environment.
