@@ -13,6 +13,7 @@ spack:
     petsc:
       # Drop this once the petsc conflicts("~openmp", when="+kokkos ^kokkos+openmp").
       # Currently when Kokkos/kokkos-kernels+openmp, petsc recipe may pick ~openmp
+      # see https://github.com/spack/spack-packages/pull/7137
       require: '+openmp'
 
   concretizer:
