@@ -9,6 +9,7 @@ on:
     - spack_repo/scorec/packages/pumi_tally/**
     - spack_repo/scorec/packages/pumi_pic/**
     - spack_repo/scorec/packages/engpar/**
+    - spack_repo/scorec/packages/omega_h/**
     - .github/workflows/pumi-tally.yml
     - .github/workflows/build-spack-env.yml
   pull_request:

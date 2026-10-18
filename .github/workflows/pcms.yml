@@ -9,6 +9,7 @@ on:
     - spack_repo/scorec/packages/pcms/**
     - spack_repo/scorec/packages/redev/**
     - spack_repo/scorec/packages/meshfields/**
+    - spack_repo/scorec/packages/omega_h/**
     - .github/workflows/pcms.yml
     - .github/workflows/build-spack-env.yml
   pull_request:

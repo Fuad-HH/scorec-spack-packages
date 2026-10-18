@@ -7,7 +7,7 @@
 #   spack install
 spack:
   specs:
-  - pumi-tally ^pumi-pic+shared ^kokkos+serial+openmp
+  - pumi-tally ^kokkos+serial+openmp
 
   repos:
     scorec: $env/../../spack_repo/scorec
