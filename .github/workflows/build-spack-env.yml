@@ -100,7 +100,8 @@ jobs:
       env:
         OMPI_MCA_rmaps_base_oversubscribe: "1"
         PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
-      run: spack -e "$SPACK_ENV_DIR" test run
+      # Only test the root specs, not their dependencies.
+      run: spack -e "$SPACK_ENV_DIR" test run --explicit
 
     - name: Push to build cache
       if: ${{ !cancelled() && env.PUSH_BUILDCACHE == 'true' }}
