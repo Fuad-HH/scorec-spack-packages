@@ -32,6 +32,7 @@ spack env activate pumi-env
 
 ```bash
 spack repo add https://github.com/SCOREC/scorec-spack-packages.git --name scorec
+spack repo update builtin
 spack repo update builtin --branch releases/v2026.10
 ```
 Now, if you do `spack config get repos` you should see the repositories added to the list.
