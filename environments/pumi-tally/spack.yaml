@@ -12,6 +12,11 @@ spack:
   repos:
     scorec: $env/../../spack_repo/scorec
 
+  packages:
+    all:
+      # GitHub runners vary in architecture
+      require: target=x86_64_v3
+
   concretizer:
     unify: true
     reuse: false
