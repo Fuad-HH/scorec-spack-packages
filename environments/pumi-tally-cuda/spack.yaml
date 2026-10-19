@@ -1,0 +1,30 @@
+# PUMI-Tally environment (CUDA). Also covers pumi-pic+cuda.
+#
+# Built (compile-only, no GPU) by .github/workflows/pumi-tally.yml. cuda comes
+# from an external: CI registers the container's toolkit with
+# `spack external find`, local builds use the site/user packages.yaml.
+#
+#   spack env activate environments/pumi-tally-cuda
+#   spack install
+spack:
+  specs:
+  - pumi-tally+cuda cuda_arch=75
+
+  repos:
+    scorec: $env/../../spack_repo/scorec
+
+  packages:
+    all:
+      # GitHub runners vary in architecture
+      require: target=x86_64_v3
+
+  concretizer:
+    unify: true
+    reuse: false
+
+  config:
+    install_tree:
+      # Padding lets binaries from the build cache relocate to any install root.
+      padded_length: 128
+
+  view: false

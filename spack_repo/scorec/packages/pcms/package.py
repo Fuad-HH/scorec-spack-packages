@@ -59,6 +59,8 @@ class Pcms(CMakePackage, CudaPackage):
     depends_on('py-pybind11', type='build', when='+python')
     depends_on('py-numpy', type=('build','link','run'), when='+python')
     depends_on('netcdf-c build_system=cmake', when='+netcdf')
+    # pcms_testcases stores large files with git-lfs
+    depends_on('git-lfs', type='build', when='+tests')
 
     extends('python', when='+python')
 
@@ -71,12 +73,25 @@ class Pcms(CMakePackage, CudaPackage):
         depends_on('petsc {0}'.format(cuda_dep), when='@develop+petsc {0}'.format(cuda_dep))
 
     conflicts('cuda_arch=none', when='+cuda', msg='CUDA architecture is required')
+    # Builds through kokkos's nvcc_wrapper, so +cuda must match Kokkos's backend
+    conflicts('~cuda', when='^kokkos+cuda', msg='PCMS requires +cuda when Kokkos has +cuda')
+    conflicts('+cuda', when='^kokkos~cuda', msg='PCMS requires Kokkos+cuda when CUDA is enabled')
 
 
     resource(name='testdata',
             git='https://github.com/SCOREC/pcms_testcases.git',
             branch='main',
-            placement='testdata')
+            placement='testdata', when="+tests")
+
+    # Spack's git fetcher has no LFS support, so the resource only contains
+    # LFS pointer files. Pull the real content once git-lfs is available.
+    @run_before('cmake')
+    def fetch_lfs_testdata(self):
+        if not self.spec.satisfies('+tests'):
+            return
+        with working_dir(join_path(self.stage.source_path, 'testdata')):
+            git = which('git', required=True)
+            git('lfs', 'pull')
 
     def cmake_args(self):
         prefix = "PCMS"
