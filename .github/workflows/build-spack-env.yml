@@ -109,8 +109,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Push whatever got installed, even if the install step failed, so
-        # the next run doesn't rebuild it.
-        spack -e "$SPACK_ENV_DIR" buildcache push --unsigned --update-index \
+        # the next run doesn't rebuild it. --allow-missing skips specs that
+        # aren't installed, like build deps of packages pulled from the cache.
+        spack -e "$SPACK_ENV_DIR" buildcache push --unsigned --update-index --allow-missing \
           --base-image "${{ inputs.base-image }}" \
           scorec-buildcache
 
