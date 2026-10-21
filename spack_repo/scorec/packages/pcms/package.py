@@ -114,6 +114,8 @@ class Pcms(CMakePackage, CudaPackage):
                 self.define_from_variant(f'{prefix}_ENABLE_SUNDIALS', 'sundials')
                 ]
         args.append(self.define("perfstubs_DIR",self.spec["perfstubs"].libs.directories[0] + "/cmake" ))
+        if self.spec.satisfies("+python"):
+            args.append(self.define("PCMS_PYTHON_INSTALL_LOCATION", python_platlib))
         return args
 
     # modify the default behavior in lib/spack/build_systems/cmake.py
