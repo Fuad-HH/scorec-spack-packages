@@ -32,6 +32,7 @@ class Pcms(CMakePackage, CudaPackage):
     variant('petsc', default=False, description='link against petsc, required for conservative field transfer')
     variant('meshfields', default=True, description='link against mesh fields for FEM field evaluation')
     variant('sundials', default=False, description='link against sundials for adaptive transient timestepping')
+    variant('gnet', default=False, description='build the GNET to GTC mapping library and gnet2gtc tool')
 
     depends_on('redev@main', when='@develop')
     depends_on('redev@4.3.1:',type=('build','link','run'))
@@ -52,6 +53,7 @@ class Pcms(CMakePackage, CudaPackage):
     depends_on('meshfields', when='+meshfields')
     depends_on('petsc+kokkos', when="@develop+petsc")
     depends_on('sundials', when="+sundials")
+    depends_on('hdf5', when="+gnet")
     depends_on('c')
     depends_on('cxx')
     depends_on('fortran', when='+fortran')
@@ -73,6 +75,7 @@ class Pcms(CMakePackage, CudaPackage):
         depends_on('petsc {0}'.format(cuda_dep), when='@develop+petsc {0}'.format(cuda_dep))
 
     conflicts('cuda_arch=none', when='+cuda', msg='CUDA architecture is required')
+    conflicts('+gnet', when='@:0.0.5', msg='GNET support was added after 0.0.5')
     # Builds through kokkos's nvcc_wrapper, so +cuda must match Kokkos's backend
     conflicts('~cuda', when='^kokkos+cuda', msg='PCMS requires +cuda when Kokkos has +cuda')
     conflicts('+cuda', when='^kokkos~cuda', msg='PCMS requires Kokkos+cuda when CUDA is enabled')
@@ -111,7 +114,8 @@ class Pcms(CMakePackage, CudaPackage):
                 self.define_from_variant(f'{prefix}_ENABLE_NETCDF', 'netcdf'),
                 self.define_from_variant(f'{prefix}_ENABLE_PETSC', 'petsc'),
                 self.define_from_variant(f'{prefix}_ENABLE_MESHFIELDS', 'meshfields'),
-                self.define_from_variant(f'{prefix}_ENABLE_SUNDIALS', 'sundials')
+                self.define_from_variant(f'{prefix}_ENABLE_SUNDIALS', 'sundials'),
+                self.define_from_variant(f'{prefix}_ENABLE_GNET', 'gnet')
                 ]
         args.append(self.define("perfstubs_DIR",self.spec["perfstubs"].libs.directories[0] + "/cmake" ))
         if self.spec.satisfies("+python"):
