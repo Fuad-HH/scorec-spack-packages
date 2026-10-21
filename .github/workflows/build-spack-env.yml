@@ -21,6 +21,13 @@ on:
         required: false
         type: boolean
         default: false
+      container:
+        description: >-
+          Image to run the job in (e.g. nvidia/cuda:...-devel). Its CUDA toolkit,
+          if any, is registered as a non-buildable external. Empty runs on the runner.
+        required: false
+        type: string
+        default: ''
 
 env:
   SPACK_ENV_DIR: environments/${{ inputs.environment }}
@@ -32,7 +39,20 @@ jobs:
   build:
     name: ${{ inputs.environment }}
     runs-on: ${{ inputs.runner }}
+    # An empty image runs the job directly on the runner.
+    container:
+      image: ${{ inputs.container }}
     steps:
+    # Container images (unlike the runner) lack Spack's prerequisites. Install
+    # them before checkout so actions/checkout can use git.
+    - name: Install Spack prerequisites
+      if: ${{ inputs.container != '' }}
+      run: |
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+          build-essential gfortran git python3 ca-certificates curl file patch \
+          unzip bzip2 xz-utils zstd
+
     - uses: actions/checkout@v5
 
     # Equivalent of spack/setup-spack, which the repo's Actions policy
@@ -69,6 +89,14 @@ jobs:
           --oci-username-variable GITHUB_ACTOR \
           --oci-password-variable GITHUB_TOKEN \
           scorec-buildcache "$BUILDCACHE_URL"
+
+    - name: Register container CUDA toolkit
+      if: ${{ inputs.container != '' }}
+      run: |
+        if [ -x /usr/local/cuda/bin/nvcc ]; then
+          export PATH="/usr/local/cuda/bin:$PATH"
+          spack -e "$SPACK_ENV_DIR" external find --not-buildable cuda
+        fi
 
     - name: Concretize
       run: |

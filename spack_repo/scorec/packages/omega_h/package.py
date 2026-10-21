@@ -17,5 +17,9 @@ class OmegaH(BuiltinOmegaH):
         git="https://github.com/SCOREC/omega_h.git",
     )
 
+    # Omega_h follows Kokkos's backend, but with kokkos+cuda it compiles through
+    # kokkos's nvcc_wrapper, which needs nvcc on PATH.
+    depends_on("cuda", type="build", when="+kokkos ^kokkos+cuda")
+
     # https://github.com/SCOREC/omega_h/pull/246 . Drop patch when that merges.
     patch("r3d-few-strict-aliasing.patch", when="@11.0.0-scorec:11.4.0-scorec")

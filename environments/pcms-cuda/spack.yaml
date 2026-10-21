@@ -1,0 +1,32 @@
+spack:
+  specs:
+  - matrix:
+    - [pcms@develop]
+    - ['~python', '+python']
+    - ['~petsc', '+petsc']
+    # ~tests: pcms runs its test executables at build time (catch_discover_tests),
+    # which initializes Kokkos and fails on CI runners without a GPU.
+    - ['+cuda cuda_arch=75 ~tests']
+
+  repos:
+    scorec: $env/../../spack_repo/scorec
+
+  # cuda comes from an external: CI registers the container's toolkit with
+  # `spack external find`, local builds use the site/user packages.yaml.
+
+  packages:
+    all:
+      # GitHub runners vary in architecture
+      require: target=x86_64_v3
+
+  concretizer:
+    # Required so mutually exclusive variants can coexist in one environment.
+    unify: false
+    reuse: false
+
+  config:
+    install_tree:
+      # Padding lets binaries from the build cache relocate to any install root.
+      padded_length: 128
+
+  view: false

@@ -57,6 +57,9 @@ class Meshfields(CMakePackage, CudaPackage):
         depends_on('cabana {0}'.format(cuda_dep), when=cuda_dep)
 
     conflicts('cuda_arch=none', when='+cuda', msg='CUDA architecture is required')
+    # Builds through kokkos's nvcc_wrapper, so +cuda must match Kokkos's backend
+    conflicts('~cuda', when='^kokkos+cuda', msg='MeshFields requires +cuda when Kokkos has +cuda')
+    conflicts('+cuda', when='^kokkos~cuda', msg='MeshFields requires Kokkos+cuda when CUDA is enabled')
 
     def cmake_args(self):
         # FIXME: Add arguments other than

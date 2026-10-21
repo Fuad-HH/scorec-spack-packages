@@ -45,6 +45,9 @@ class PumiTally(CMakePackage, CudaPackage):
         depends_on("pumi-pic {0}".format(cuda_dep), when=cuda_dep)
 
     conflicts("cuda_arch=none", when="+cuda", msg="CUDA architecture is required")
+    # Builds through kokkos's nvcc_wrapper, so +cuda must match Kokkos's backend
+    conflicts("~cuda", when="^kokkos+cuda", msg="PUMI-Tally requires +cuda when Kokkos has +cuda")
+    conflicts("+cuda", when="^kokkos~cuda", msg="PUMI-Tally requires Kokkos+cuda when CUDA is enabled")
 
     def setup_build_environment(self, env):
         # Same problem PUMI-PiC has: Kokkos' launch compiler swaps the compiler
