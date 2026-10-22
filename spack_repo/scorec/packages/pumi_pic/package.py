@@ -47,7 +47,7 @@ class PumiPic(CMakePackage, CudaPackage):
     )
     
     depends_on("kokkos@4.7.00:4.7.04")
-    depends_on("omega-h@11.2.0-scorec +kokkos")
+    depends_on("omega-h@11.4.0-scorec +kokkos")
     depends_on("cabana@0.6.1:0.7.0", when="+cabana")
 
     conflicts(

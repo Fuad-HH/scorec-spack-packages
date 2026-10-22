@@ -10,10 +10,11 @@ class OmegaH(BuiltinOmegaH):
     """Builtin omega-h plus fixes SCOREC needs that aren't upstream yet."""
 
     # First version with https://github.com/SCOREC/omega_h/pull/235 (pybind11
-    # as a private dependency). TODO: link spack-packages PR adding it.
+    # as a private dependency) and https://github.com/SCOREC/omega_h/pull/198
+    # (r3d::Few strict-aliasing fix). TODO: link spack-packages PR adding it.
     version(
         "11.4.0-scorec",
-        commit="8fc0a0bb3140e601cea86ebcbd2faecd30b410bf",
+        commit="07ec34ba8fddd416b41db77c1e4a97bb0e256e69",
         git="https://github.com/SCOREC/omega_h.git",
     )
 
@@ -21,5 +22,12 @@ class OmegaH(BuiltinOmegaH):
     # kokkos's nvcc_wrapper, which needs nvcc on PATH.
     depends_on("cuda", type="build", when="+kokkos ^kokkos+cuda")
 
-    # https://github.com/SCOREC/omega_h/pull/246 . Drop patch when that merges.
-    patch("r3d-few-strict-aliasing.patch", when="@11.0.0-scorec:11.4.0-scorec")
+    # Make PyOmega_h_DEST overridable (default lib/, not lib64/) so the python
+    # module lands in spack's python_platlib. Drop once merged upstream.
+    patch("pyomega_h-install-location.patch", when="@11.4.0-scorec+python")
+
+    def cmake_args(self):
+        args = super().cmake_args()
+        if self.spec.satisfies("@11.4.0-scorec+python"):
+            args.append(self.define("PyOmega_h_DEST", python_platlib))
+        return args
