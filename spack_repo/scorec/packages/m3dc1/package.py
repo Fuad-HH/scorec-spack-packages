@@ -57,7 +57,7 @@ class M3dc1(CMakePackage, CudaPackage):
     depends_on("petsc+mumps+superlu-dist", type=("build", "link"))
     depends_on("petsc~complex", when="~complex", type=("build", "link"))
     depends_on("petsc+complex", when="+complex", type=("build", "link"))
-    depends_on("zoltan+parmetis", type=("build", "link"))
+    depends_on("zoltan+parmetis~fortran", type=("build", "link"))
     depends_on("pumi@2.2.8:+zoltan", type=("build", "link"))
     # The stellarator version reads VMEC equilibria through NetCDF.
     depends_on("netcdf-c+mpi", when="+st", type=("build", "link"))
