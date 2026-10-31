@@ -1,0 +1,33 @@
+name: M3D-C1 environment
+
+on:
+  push:
+    branches: [main]
+    paths: &paths
+    - environments/m3dc1/**
+    - spack_repo/scorec/repo.yaml
+    - spack_repo/scorec/packages/m3dc1/**
+    - .github/workflows/m3dc1.yml
+    - .github/workflows/build-spack-env.yml
+  pull_request:
+    paths: *paths
+  schedule:
+  # Weekly rebuild to pick up new commits on tracked branches and keep the
+  # build cache warm for downstream CI.
+  - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-spack-env.yml
+    with:
+      environment: m3dc1
+      target: x86_64_v3

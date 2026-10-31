@@ -11,10 +11,9 @@ class M3dc1(CMakePackage, CudaPackage):
     tokamak plasmas."""
 
     homepage = "https://m3dc1.pppl.gov"
-    # This is fixed to a forked branch because the update in cmake is not merged into the main repo yet. Once it is merged, we can switch back to the main repo.
     git = "https://github.com/PrincetonUniversity/M3DC1.git"
 
-    maintainers("TBD")
+    maintainers("jacobmerson")
 
     version("master", branch="master")
 
@@ -42,11 +41,15 @@ class M3dc1(CMakePackage, CudaPackage):
 
     depends_on("gsl", type=("build", "link"))
     depends_on("fftw", type=("build", "link"))
+    depends_on("lapack", type=("build", "link"))
     depends_on("hdf5+fortran+hl+mpi", type=("build", "link"))
-    depends_on("petsc +mumps", when="~complex", type=("build", "link"))
-    depends_on("petsc +mumps +complex", when="+complex", type=("build", "link"))
+    depends_on("petsc+mumps+superlu-dist", type=("build", "link"))
+    depends_on("petsc~complex", when="~complex", type=("build", "link"))
+    depends_on("petsc+complex", when="+complex", type=("build", "link"))
     depends_on("zoltan+parmetis", type=("build", "link"))
-    depends_on("pumi+zoltan", type=("build", "link"))
+    depends_on("pumi@2.2.8:+zoltan", type=("build", "link"))
+    # The stellarator version reads VMEC equilibria through NetCDF.
+    depends_on("netcdf-c+mpi", when="+st", type=("build", "link"))
     depends_on("pspline", when="+pspline", type=("build", "link"))
     depends_on("cuda", when="+gpu", type=("build", "link"))
 
@@ -67,6 +70,9 @@ class M3dc1(CMakePackage, CudaPackage):
             self.define_from_variant("M3DC1_ENABLE_ST", "st"),
             self.define_from_variant("M3DC1_ENABLE_ADAS", "adas"),
         ]
+
+        if "+st" in spec:
+            args.append(self.define("NetCDF_ROOT", spec["netcdf-c"].prefix))
 
         if "+pspline" in spec:
             pspline_prefix = spec["pspline"].prefix
