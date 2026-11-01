@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths: &paths
     - environments/m3dc1/**
+    - environments/m3dc1-image/**
     - spack_repo/scorec/repo.yaml
     - spack_repo/scorec/packages/m3dc1/**
     - .github/workflows/m3dc1.yml
@@ -26,8 +27,89 @@ permissions:
   packages: write
 
 jobs:
+  # Dependencies for the M3DC1 repository's CI.
   build:
     uses: ./.github/workflows/build-spack-env.yml
     with:
       environment: m3dc1
       target: x86_64_v3
+
+  # date for the dated image tags
+  image-date:
+    runs-on: ubuntu-24.04
+    outputs:
+      date: ${{ steps.date.outputs.date }}
+    steps:
+    - id: date
+      run: echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+  # Shares every dependency with the m3dc1 environment; waiting for it lets
+  # this job pull them from the build cache instead of building them twice.
+  build-image:
+    needs: [build, image-date]
+    uses: ./.github/workflows/build-spack-env.yml
+    with:
+      environment: m3dc1-image
+      target: x86_64_v3
+      # One root per executable; each must match exactly one root of the
+      # environment.
+      image-spec: >-
+        m3dc1~3d~complex~openmp m3dc1~3d~complex+openmp
+        m3dc1~3d+complex~openmp m3dc1~3d+complex+openmp
+        m3dc1+3d~st~openmp m3dc1+3d~st+openmp
+        m3dc1+3d+st~openmp m3dc1+3d+st+openmp
+      image-tag: m3dc1-develop-amd64
+      image-date: ${{ needs.image-date.outputs.date }}
+
+  publish-image:
+    needs: [image-date, build-image]
+    if: ${{ !cancelled() && needs.build-image.outputs.image != '' }}
+    runs-on: ubuntu-24.04
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
+    steps:
+    - name: Log in to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+    - name: Tag public image
+      id: publish
+      env:
+        REPO: ghcr.io/scorec/scorec-spack-buildcache
+        PUBLIC: ghcr.io/scorec/m3dc1
+        DATE: ${{ needs.image-date.outputs.date }}
+        BUILT: ${{ needs.build-image.outputs.image }}
+      run: |
+        docker buildx imagetools create \
+          -t "$REPO:m3dc1-develop-$DATE" -t "$REPO:m3dc1-develop" \
+          -t "$PUBLIC:develop-$DATE" -t "$PUBLIC:develop" "$BUILT"
+        echo "image=$PUBLIC:develop-$DATE" >> "$GITHUB_OUTPUT"
+        echo "Published $PUBLIC:develop-$DATE from $BUILT" >> "$GITHUB_STEP_SUMMARY"
+
+  # Checks the published image runs on a plain runner.
+  test-container:
+    needs: publish-image
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Run image
+      env:
+        IMAGE: ${{ needs.publish-image.outputs.image }}
+      run: |
+        docker pull "$IMAGE"
+        docker run --rm \
+          -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
+          -e OMPI_MCA_rmaps_base_oversubscribe=1 \
+          "$IMAGE" bash -euo pipefail -c '
+            for exe in m3dc1_2d m3dc1_2d_complex m3dc1_3d m3dc1_3d_st \
+                       m3dc1_2d_omp_pic m3dc1_2d_complex_omp_pic \
+                       m3dc1_3d_omp_pic m3dc1_3d_omp_st_pic \
+                       create_smb split_smb check_smb show_meshcount vtk_order; do
+              path="$(command -v "$exe")" || { echo "$exe not on PATH"; exit 1; }
+              if ldd "$path" | grep "not found"; then
+                echo "$exe has unresolved libraries"; exit 1
+              fi
+              echo "ok $path"
+            done
+            test -f "$M3DC1_ADAS_ADF11/scd96/scd96_ne.dat"
+            echo "ok ADAS data in $M3DC1_ADAS_ADF11"
+            mpirun -n 2 hostname
+          '
