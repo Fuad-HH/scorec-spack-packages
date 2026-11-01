@@ -1,0 +1,29 @@
+# M3D-C1 container image environment.
+
+spack:
+  specs:
+  - matrix:
+    - [m3dc1@master +adas]
+    - ['~3d ~complex ~st', '~3d +complex ~st', '+3d ~complex ~st', '+3d ~complex +st']
+    - ['~openmp ~particle', '+openmp +particle']
+
+  repos:
+    scorec: $env/../../spack_repo/scorec
+
+  packages:
+    all:
+      # GitHub runners vary in architecture
+      require: target=x86_64_v3
+
+  concretizer:
+    unify: false
+    # ironically, reuse off should reduce the amount of rebuilding because it'll
+    # use cached builds
+    reuse: false
+
+  config:
+    install_tree:
+      # Padding lets binaries from the build cache relocate to any install root.
+      padded_length: 128
+
+  view: false

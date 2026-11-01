@@ -138,3 +138,19 @@ class M3dc1(CMakePackage, CudaPackage):
 
         for exe in executables:
             install(exe, prefix.bin)
+
+        # The OpenADAS ADF11 data is downloaded into the build directory, and
+        # the adas_adf11 input has no default. Install it so the path below
+        # stays valid after the build directory is gone.
+        if "+adas" in spec:
+            install_tree(
+                join_path(self.build_directory, "adas", "adf11"),
+                join_path(prefix.share, "m3dc1", "adas", "adf11"),
+            )
+
+    def setup_run_environment(self, env):
+        # Value for the adas_adf11 input in C1input.
+        if self.spec.satisfies("+adas"):
+            env.set(
+                "M3DC1_ADAS_ADF11", join_path(self.prefix.share, "m3dc1", "adas", "adf11")
+            )

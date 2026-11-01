@@ -10,15 +10,6 @@ spack:
     scorec: $env/../../spack_repo/scorec
 
   packages:
-    gcc:
-      externals:
-      - spec: gcc@11.4.0 languages:='c,c++,fortran'
-        prefix: /usr
-        extra_attributes:
-          compilers:
-            c: /usr/bin/gcc
-            cxx: /usr/bin/g++
-            fortran: /usr/bin/gfortran
     all:
       # GitHub runners vary in architecture
       require: target=x86_64_v3

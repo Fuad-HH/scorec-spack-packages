@@ -83,3 +83,29 @@ to use it.
 The same images are also tagged in the build cache repository as
 `pcms-develop`, `pcms-develop-YYYY-MM-DD`, and single-arch containers
 `pcms-develop-amd64` and `pcms-develop-arm64`.
+
+### M3D-C1 container image
+
+`environments/m3dc1-image` is published as `ghcr.io/scorec/m3dc1`, for
+`linux/amd64` (x86-64-v3) only. It contains these executables, all built
+with ADAS support, plus the SCOREC mesh utilities (`split_smb`, ...):
+
+| Executable | Features |
+|---|---|
+| `m3dc1_2d`, `m3dc1_2d_complex`, `m3dc1_3d`, `m3dc1_3d_st` | Regression-test flavors |
+| `m3dc1_2d_omp_pic`, `m3dc1_2d_complex_omp_pic`, `m3dc1_3d_omp_pic`, `m3dc1_3d_omp_st_pic` | Same, with OpenMP and particles |
+
+The OpenADAS ADF11 data is included. Set the `adas_adf11` input in
+`C1input` to the value of `$M3DC1_ADAS_ADF11`.
+
+```bash
+# The container runs as root, which Open MPI only allows when told to.
+docker run --rm -it -v "$PWD:/work" -w /work \
+  -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
+  ghcr.io/scorec/m3dc1:develop mpirun -n 4 m3dc1_2d
+```
+
+| Tag | Contents |
+|---|---|
+| `ghcr.io/scorec/m3dc1:develop` | Latest build |
+| `ghcr.io/scorec/m3dc1:develop-YYYY-MM-DD` | The build from that date |
