@@ -36,6 +36,8 @@ class Meshfields(CMakePackage, CudaPackage, ROCmPackage):
     license("BSD-3", checked_by="jacobmerson")
 
     version('main', branch='main')
+    # this is a version prior to the merge of #75
+    version('2026.10.22', commit='604f42f56bf671a2781fb779fa833c52cfd42f62')
 
     variant('shared', default=False, description='enable shared library builds')
     variant('tests', default=False, description='enable build of tests')
