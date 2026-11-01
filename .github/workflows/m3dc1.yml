@@ -43,8 +43,6 @@ jobs:
     - id: date
       run: echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
 
-  # Shares every dependency with the m3dc1 environment; waiting for it lets
-  # this job pull them from the build cache instead of building them twice.
   build-image:
     needs: [build, image-date]
     uses: ./.github/workflows/build-spack-env.yml
@@ -68,17 +66,19 @@ jobs:
     outputs:
       image: ${{ steps.publish.outputs.image }}
     steps:
-    - name: Log in to GHCR
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-
+    # The token is only in this step's environment, as in the build cache
+    # push steps, and the login is removed before the step ends.
     - name: Tag public image
       id: publish
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         REPO: ghcr.io/scorec/scorec-spack-buildcache
         PUBLIC: ghcr.io/scorec/m3dc1
         DATE: ${{ needs.image-date.outputs.date }}
         BUILT: ${{ needs.build-image.outputs.image }}
       run: |
+        printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        trap 'docker logout ghcr.io' EXIT
         docker buildx imagetools create \
           -t "$REPO:m3dc1-develop-$DATE" -t "$REPO:m3dc1-develop" \
           -t "$PUBLIC:develop-$DATE" -t "$PUBLIC:develop" "$BUILT"
