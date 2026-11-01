@@ -54,7 +54,7 @@ class Pcms(CMakePackage, CudaPackage, ROCmPackage):
     depends_on('adios2+fortran', when="+fortran", type=('build', 'link','run'))
     depends_on('meshfields+shared', when="@develop+python")
     depends_on('meshfields+shared', when="+shared")
-    depends_on('meshfields', when='@develop')
+    depends_on('meshfields@2026.10.22', when='@develop+meshfields')
     depends_on('meshfields', when='+meshfields')
     depends_on('petsc+kokkos', when="@develop+petsc")
     depends_on('sundials', when="+sundials")
