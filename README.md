@@ -6,6 +6,7 @@ This Spack repository (namespace `scorec`) provides recipes for SCOREC software 
 - **MeshFields**: [SCOREC/meshFields](https://github.com/SCOREC/meshFields)
 - **EnGPar**: [SCOREC/EnGPar](https://github.com/SCOREC/EnGPar)
 - **PUMI-PiC**: [SCOREC/pumi-pic](https://github.com/SCOREC/pumi-pic)
+- **M3D-C1**: [PrincetonUniversity/M3DC1](https://github.com/PrincetonUniversity/M3DC1)
 - **OpenMC with PUMI‑Tally** (OpenMC fork integrating PUMI‑Tally):
   - **OpenMC fork**: [Fuad-HH/openmc](https://github.com/Fuad-HH/openmc) (upstream: [openmc-dev/openmc](https://github.com/openmc-dev/openmc))
   - **PUMI‑Tally**: [Fuad-HH/PumiUMTally](https://github.com/Fuad-HH/PumiUMTally)
